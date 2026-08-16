@@ -33,7 +33,7 @@ export async function createAuthorizationRequest(origin: string, returnTo: strin
   });
   return {
     location: `${issuer}/oauth2/authorize?${query}`,
-    transaction: base64url(new TextEncoder().encode(JSON.stringify({ verifier, state, returnTo }))),
+    transaction: base64url(new TextEncoder().encode(JSON.stringify({ verifier, state, returnTo: sameOriginReturnTo(origin, returnTo) }))),
   };
 }
 
@@ -51,7 +51,9 @@ export async function exchangeAuthorizationCode(origin: string, code: string, tr
     }),
   });
   if (!response.ok) throw new Error("OIDC_CODE_EXCHANGE_FAILED");
-  return { tokens: await response.json() as { access_token: string; id_token?: string }, returnTo: decoded.returnTo };
+  const tokens = await response.json() as { access_token?: string; id_token?: string; expires_in?: number };
+  if (!tokens.access_token) throw new Error("OIDC_TOKEN_RESPONSE_INVALID");
+  return { tokens: { ...tokens, access_token: tokens.access_token }, returnTo: sameOriginReturnTo(origin, decoded.returnTo) };
 }
 
 export function platformLogoutUrl(origin: string, idToken = ""): string {
@@ -61,3 +63,8 @@ export function platformLogoutUrl(origin: string, idToken = ""): string {
 }
 
 export function userInfoUrl(): string { return `${issuer}/userinfo`; }
+
+function sameOriginReturnTo(origin: string, value: string): string {
+  const target = new URL(value, origin);
+  return target.origin === new URL(origin).origin ? target.href : `${origin}/`;
+}

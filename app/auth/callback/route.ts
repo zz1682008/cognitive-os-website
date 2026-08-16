@@ -10,11 +10,13 @@ export async function GET(request: NextRequest) {
     const result = await exchangeAuthorizationCode(request.nextUrl.origin, code, transaction, state);
     const response = NextResponse.redirect(new URL(result.returnTo, request.nextUrl.origin));
     response.cookies.delete("xeliti_website_oidc_tx");
+    const maxAge = Number.isFinite(result.tokens.expires_in) && Number(result.tokens.expires_in) > 0
+      ? Number(result.tokens.expires_in) : undefined;
     response.cookies.set("xeliti_website_access", result.tokens.access_token, {
-      httpOnly: true, secure: request.nextUrl.protocol === "https:", sameSite: "lax", path: "/", maxAge: 300,
+      httpOnly: true, secure: request.nextUrl.protocol === "https:", sameSite: "lax", path: "/", ...(maxAge ? { maxAge } : {}),
     });
     if (result.tokens.id_token) response.cookies.set("xeliti_website_id", result.tokens.id_token, {
-      httpOnly: true, secure: request.nextUrl.protocol === "https:", sameSite: "lax", path: "/", maxAge: 300,
+      httpOnly: true, secure: request.nextUrl.protocol === "https:", sameSite: "lax", path: "/", ...(maxAge ? { maxAge } : {}),
     });
     return response;
   } catch {
