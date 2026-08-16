@@ -27,7 +27,7 @@ export const desktopReleaseConfig: DesktopReleaseConfig = {
 
 export const enterpriseAccessConfig = {
   showOnlineEntry: false,
-  showLoginEntry: false,
+  showLoginEntry: true,
   onlineUrl: null,
-  loginUrl: null,
+  loginUrl: "/auth/login",
 } as const;
