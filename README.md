@@ -19,6 +19,10 @@ npx next dev --hostname 127.0.0.1 --port 3001
 
 正式部署时设置 `NEXT_PUBLIC_SITE_URL` 为网站完整来源地址，例如 `https://www.example.com`。只有设置正式地址后，页面才会输出 Open Graph 和 X 分享图的绝对 URL，避免在本地阶段写入虚假域名。
 
+当官网位于反向代理之后并接入统一登录时，还必须设置
+`WEBSITE_CANONICAL_ORIGIN` 为浏览器使用的 HTTPS 来源地址。OIDC 回调、登出回跳和
+Secure Cookie 都以这个受控来源为准，不采信外部请求头拼接认证地址。
+
 ## 项目结构
 
 - `app/page.tsx`：官网内容与语义结构

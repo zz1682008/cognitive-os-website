@@ -1,6 +1,15 @@
 const issuer = (process.env.PLATFORM_ACCOUNT_CENTER_ISSUER ?? "http://127.0.0.1:5200").replace(/\/$/, "");
+const configuredWebsiteOrigin = (process.env.WEBSITE_CANONICAL_ORIGIN ?? "").trim();
 const clientId = "xeliti-website";
 export const PKCE_S256_POLICY = "code_challenge_method=S256";
+
+export function websiteOrigin(requestOrigin: string): string {
+  const origin = new URL(configuredWebsiteOrigin || requestOrigin).origin;
+  if (configuredWebsiteOrigin && new URL(origin).protocol !== "https:") {
+    throw new Error("WEBSITE_CANONICAL_ORIGIN_MUST_USE_HTTPS");
+  }
+  return origin;
+}
 
 function base64url(value: Uint8Array): string {
   let binary = "";
