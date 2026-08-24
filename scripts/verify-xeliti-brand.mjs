@@ -6,6 +6,7 @@ const activeBrandFiles = [
   "README.md",
   "app/layout.tsx",
   "app/page.tsx",
+  "app/components/decision-chain-demo.tsx",
   "app/components/xeliti-motion.tsx",
   "app/components/xeliti-platform-story.tsx",
   "public/personal/index.html",
@@ -39,8 +40,16 @@ for (const relativePath of requiredBrandFiles) {
   }
 }
 
+const productShotSource = readRequired("app/components/decision-chain-demo.tsx");
+for (const requiredToken of ["XELITI Business", "产品界面截图", "主要问题识别", "建议下一步"]) {
+  if (!productShotSource.includes(requiredToken)) {
+    failures.push(`app/components/decision-chain-demo.tsx: missing product proof ${requiredToken}`);
+  }
+}
+
 const appSources = [
   "app/page.tsx",
+  "app/components/decision-chain-demo.tsx",
   "app/components/xeliti-motion.tsx",
   "app/components/xeliti-platform-story.tsx",
   "public/personal/index.html",

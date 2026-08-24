@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { DecisionChainDemo } from "./components/decision-chain-demo";
 import { XelitiMotion } from "./components/xeliti-motion";
 import { XelitiPlatformStory } from "./components/xeliti-platform-story";
 
@@ -94,20 +95,11 @@ export default function Home() {
               </div>
             </div>
 
-            <figure className="hero-visual" data-hero-visual>
-              <div className="hero-image-frame">
-                <Image
-                  src="/xeliti-enterprise-strategy.webp"
-                  alt="黑色实体、透明结构与橙色光源构成的 XELITI 认知平台视觉"
-                  width={1536}
-                  height={1024}
-                  priority
-                  sizes="(max-width: 767px) 100vw, 48vw"
-                />
-              </div>
+            <figure className="hero-visual hero-product-shot" data-hero-visual>
+              <DecisionChainDemo />
               <figcaption>
-                <strong>Business</strong>
-                <span>第一个复杂参考产品</span>
+                <strong>Business 产品界面</strong>
+                <span>持续理解 · 主要问题识别 · 下一步行动</span>
               </figcaption>
             </figure>
           </div>
