@@ -1,8 +1,8 @@
-# MASSOS 企业版官网
+# XELITI 官网
 
-MASSOS 企业版一期官网。页面围绕“持续理解、料事于先、提前防错”展开，展示系统如何持续理解企业背景，在关键决策前梳理事实、风险、连锁影响和下一步。
+XELITI 通用认知平台官网。首页说明 Product、Agent Harness、Cognitive Kernel、State / Memory 与 AI-Gateway 的分层关系，并将 Business 呈现为第一个复杂参考产品。
 
-一期只包含公开官网和本地演示数据，不包含 C 端、登录授权、支付、后台或真实桌面安装包。
+当前只包含公开官网和本地展示内容，不包含登录授权、支付、后台或真实桌面安装包。
 
 ## 环境要求
 
@@ -12,10 +12,11 @@ MASSOS 企业版一期官网。页面围绕“持续理解、料事于先、提�
 
 ```bash
 npm install
-npx next dev --hostname 127.0.0.1 --port 3001
+npm run build
+npm run start -- --hostname 127.0.0.1 --port 3011
 ```
 
-当前机器若运行 macOS 13.5 以下版本，Cloudflare `workerd` 无法启动，因此本地预览使用 Next.js 开发服务器；生产构建仍使用 `npm run build`。
+本地验收使用生产预览，首页位于 `/`，Personal 静态页位于 `/personal/`。开发模式仍可使用 `npm run dev`；若当前机器的 Cloudflare `workerd` 无法启动，以上生产预览命令不依赖开发模式即可完成两条真实路径的检查。
 
 正式部署时设置 `NEXT_PUBLIC_SITE_URL` 为网站完整来源地址，例如 `https://www.example.com`。只有设置正式地址后，页面才会输出 Open Graph 和 X 分享图的绝对 URL，避免在本地阶段写入虚假域名。
 
@@ -26,12 +27,12 @@ Secure Cookie 都以这个受控来源为准，不采信外部请求头拼接认
 ## 项目结构
 
 - `app/page.tsx`：官网内容与语义结构
-- `app/components/decision-chain-demo.tsx`：三项企业任务及节点联动演示
-- `app/lib/demo-scenarios.ts`：演示场景与判断链数据
+- `app/components/xeliti-platform-story.tsx`：平台层级故事
+- `app/components/xeliti-motion.tsx`：GSAP 动画与完整清理边界
 - `app/globals.css`：视觉系统与响应式布局
 - `app/layout.tsx`：中文页面元数据与字体设置
 - `public/favicon.svg`：站点图标
-- `public/og.png`：MASSOS 社交分享图
+- `public/og.png`：XELITI 社交分享图
 - `.openai/hosting.json`：保留 Sites 托管配置；当前没有数据库或存储绑定
 
 ## 质量检查
@@ -39,5 +40,6 @@ Secure Cookie 都以这个受控来源为准，不采信外部请求头拼接认
 - `npm run lint`：静态代码检查
 - `npm run build`：完整生产构建
 - `npm test`：依次执行以上两项
+- `node scripts/verify-xeliti-brand.mjs`：品牌、动画依赖和清理边界守卫
 
 当前只做本地验收，未提交、未部署。

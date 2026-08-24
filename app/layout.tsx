@@ -1,16 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const title = "MASSOS 企业版｜持续理解，料事于先，提前防错";
+const title = "XELITI｜让每个产品都拥有认知能力";
 const description =
-  "MASSOS 企业版持续理解企业目标与经营背景，在关键决策前梳理结果、风险和连锁影响，主动发现问题并给出有依据的下一步建议。";
+  "XELITI 是通用认知平台，通过共享 Agent Harness、Cognitive Kernel 与状态记忆能力，支持 Business、Personal 和未来产品持续理解并采取下一步行动。";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
 const socialImage = siteUrl ? `${siteUrl}/og.png` : undefined;
 
 export const metadata: Metadata = {
   title,
   description,
-  applicationName: "MASSOS",
+  applicationName: "XELITI",
   metadataBase: siteUrl ? new URL(siteUrl) : undefined,
   icons: {
     icon: "/favicon.svg",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "zh_CN",
-    siteName: "MASSOS",
+    siteName: "XELITI",
     title,
     description,
     images: socialImage
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
             url: socialImage,
             width: 1731,
             height: 909,
-            alt: "MASSOS 企业版：持续理解，料事于先，提前防错",
+            alt: "XELITI 通用认知平台",
           },
         ]
       : undefined,
@@ -44,8 +44,11 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#ffffff",
-  colorScheme: "light",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f4f6f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#15181c" },
+  ],
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({
