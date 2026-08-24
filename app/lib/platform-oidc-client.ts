@@ -1,7 +1,6 @@
 import { UserManager, WebStorageStateStore, type User, type UserManagerSettings } from "oidc-client-ts";
 
 export interface WebsiteIdentity { sub: string; email?: string }
-export const PKCE_S256_POLICY = "code_challenge_method=S256";
 export const WEBSITE_LOGOUT_FENCE_KEY = "xeliti-website.oidc.logout-fence.v1";
 const boundManager = Symbol("website-bound-user-manager");
 
@@ -149,15 +148,6 @@ export function settleWebsiteCallback(authority: string, origin: string): Promis
     websiteUserManager(authority, origin),
     window.self !== window.top,
   );
-}
-
-export async function recoverWebsiteAuthorizationHeader(
-  authority: string,
-  origin: string,
-): Promise<Record<string, string>> {
-  const user = await websiteUserManager(authority, origin).signinSilent();
-  if (!user) throw new Error("OIDC_SILENT_USER_MISSING");
-  return { Authorization: `Bearer ${user.access_token}` };
 }
 
 export async function logoutWebsiteManager(
