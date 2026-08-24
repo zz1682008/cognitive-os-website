@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { safeWebsiteReturnTo, websiteOidcRuntime } from "../../lib/platform-oidc-client";
+import { safeWebsiteReturnTo, settleWebsiteCallback } from "../../lib/platform-oidc-client";
 
 export function OidcCallback({ authority }: { authority: string }) {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    const runtime = websiteOidcRuntime(authority, window.location.origin);
-    runtime.settleCallback().then((user) => {
+    settleWebsiteCallback(authority, window.location.origin).then((user) => {
       if (user && window.self === window.top) {
         window.location.replace(safeWebsiteReturnTo(user.state, window.location.origin));
       }

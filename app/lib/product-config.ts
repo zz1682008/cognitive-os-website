@@ -24,10 +24,3 @@ export const desktopReleaseConfig: DesktopReleaseConfig = {
     url: null,
   },
 };
-
-export const enterpriseAccessConfig = {
-  showOnlineEntry: false,
-  showLoginEntry: true,
-  onlineUrl: null,
-  loginUrl: "/auth/login",
-} as const;

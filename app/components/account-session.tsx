@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { websiteOidcRuntime, type WebsiteIdentity } from "../lib/platform-oidc-client";
+import {
+  beginWebsiteLogin,
+  currentWebsiteIdentity,
+  logoutWebsite,
+  type WebsiteIdentity,
+} from "../lib/platform-oidc-client";
 
 export function AccountSession({ authority }: { authority: string }) {
   const [identity, setIdentity] = useState<WebsiteIdentity | null>(null);
@@ -9,7 +14,7 @@ export function AccountSession({ authority }: { authority: string }) {
 
   useEffect(() => {
     let active = true;
-    websiteOidcRuntime(authority, window.location.origin).currentIdentity()
+    currentWebsiteIdentity(authority, window.location.origin)
       .then((value) => { if (active) setIdentity(value); })
       .catch(() => { if (active) setIdentity(null); })
       .finally(() => { if (active) setPending(false); });
@@ -18,13 +23,13 @@ export function AccountSession({ authority }: { authority: string }) {
 
   async function login() {
     setPending(true);
-    await websiteOidcRuntime(authority, window.location.origin).signin(window.location.href);
+    await beginWebsiteLogin(authority, window.location.origin, window.location.href);
   }
 
   async function logout() {
     setIdentity(null);
     setPending(true);
-    await websiteOidcRuntime(authority, window.location.origin).logout(`${window.location.origin}/`);
+    await logoutWebsite(authority, window.location.origin);
   }
 
   return (

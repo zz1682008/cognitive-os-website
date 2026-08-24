@@ -1,37 +1,20 @@
-import { UserManager, type UserManagerSettings } from "oidc-client-ts";
+import { UserManager, WebStorageStateStore, type User, type UserManagerSettings } from "oidc-client-ts";
 
 export interface WebsiteIdentity { sub: string; email?: string }
-export interface OidcUserLike {
-  access_token: string;
-  id_token?: string;
-  expired?: boolean;
-  expires_at?: number;
-  state?: unknown;
-  profile: Record<string, unknown> & { sub?: string };
-}
-export interface OidcManagerPort {
-  getUser(): Promise<OidcUserLike | null>;
-  signinRedirect(args?: Record<string, unknown>): Promise<void>;
-  signinRedirectCallback(): Promise<OidcUserLike>;
-  signinSilent(): Promise<OidcUserLike>;
-  signinSilentCallback(): Promise<void>;
-  stopSilentRenew(): void;
-  removeUser(): Promise<void>;
-  signoutRedirect(args?: Record<string, unknown>): Promise<void>;
-}
-
 export const PKCE_S256_POLICY = "code_challenge_method=S256";
+export const WEBSITE_LOGOUT_FENCE_KEY = "xeliti-website.oidc.logout-fence.v1";
+const boundManager = Symbol("website-bound-user-manager");
 
 function validSubject(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0 && value.length <= 160
     && !/[\u0000-\u001f\u007f]/u.test(value);
 }
-function identity(user: OidcUserLike): WebsiteIdentity {
+function identity(user: User): WebsiteIdentity {
   const sub = user.profile.sub;
   if (!validSubject(sub)) throw new Error("OIDC_SUBJECT_INVALID");
   return { sub, ...(typeof user.profile.email === "string" ? { email: user.profile.email } : {}) };
 }
-function active(user: OidcUserLike | null): user is OidcUserLike {
+function active(user: User | null): user is User {
   return Boolean(user?.access_token) && user?.expired !== true;
 }
 function interactionRequired(error: unknown): boolean {
@@ -61,101 +44,139 @@ export function websiteOidcSettings(authority: string, origin: string): UserMana
     loadUserInfo: true,
     fetchRequestCredentials: "include",
     revokeTokensOnSignout: false,
+    userStore: new WebStorageStateStore({ store: window.sessionStorage }),
+    stateStore: new WebStorageStateStore({ store: window.sessionStorage }),
   };
 }
 
-export function createOidcRuntime(
-  manager: OidcManagerPort,
-  options: { isSilentCallback?: () => boolean } = {},
-) {
-  let generation = 0;
-  let recoveryInFlight: Promise<OidcUserLike> | null = null;
+export function websiteLogoutFenced(): boolean {
+  return window.localStorage.getItem(WEBSITE_LOGOUT_FENCE_KEY) === "deny";
+}
+export function establishWebsiteLogoutFence(): void {
+  window.localStorage.setItem(WEBSITE_LOGOUT_FENCE_KEY, "deny");
+}
+function clearWebsiteLogoutFence(): void {
+  window.localStorage.removeItem(WEBSITE_LOGOUT_FENCE_KEY);
+}
 
-  async function recoverUser(): Promise<OidcUserLike> {
-    if (recoveryInFlight) return recoveryInFlight;
-    const startedGeneration = generation;
+export function bindWebsiteUserManager(manager: UserManager): UserManager {
+  const target = manager as UserManager & { [boundManager]?: boolean };
+  if (target[boundManager]) return manager;
+  target[boundManager] = true;
+  const standardSigninSilent = manager.signinSilent.bind(manager);
+  let silentRenewal: Promise<User> | null = null;
+  manager.signinSilent = (args = {}) => {
+    if (websiteLogoutFenced()) return Promise.reject(new Error("OIDC_LOGOUT_FENCE"));
+    if (silentRenewal) return silentRenewal;
     const request = (async () => {
       const previous = await manager.getUser();
-      const expectedSubject = validSubject(previous?.profile.sub) ? previous.profile.sub : "";
-      const recovered = await manager.signinSilent();
-      if (generation !== startedGeneration) {
+      if (websiteLogoutFenced()) throw new Error("OIDC_LOGOUT_FENCE");
+      const recovered = await standardSigninSilent(args);
+      if (websiteLogoutFenced()) {
         await manager.removeUser();
         throw new Error("OIDC_LOGOUT_FENCE");
       }
+      if (!recovered) throw new Error("OIDC_SILENT_USER_MISSING");
       const recoveredIdentity = identity(recovered);
-      if (expectedSubject && recoveredIdentity.sub !== expectedSubject) {
+      if (validSubject(previous?.profile.sub) && recoveredIdentity.sub !== previous.profile.sub) {
         await manager.removeUser();
         throw new Error("OIDC_SUBJECT_MISMATCH");
       }
       return recovered;
     })();
-    recoveryInFlight = request;
-    void request.finally(() => { if (recoveryInFlight === request) recoveryInFlight = null; }).catch(() => {});
+    silentRenewal = request;
+    const clear = () => { if (silentRenewal === request) silentRenewal = null; };
+    void request.then(clear, clear);
     return request;
-  }
-
-  async function currentUser(allowRecovery = true): Promise<OidcUserLike | null> {
-    const stored = await manager.getUser();
-    if (active(stored)) return stored;
-    if (!allowRecovery) return null;
-    try {
-      return await recoverUser();
-    } catch (error) {
-      if (interactionRequired(error)) {
-        await manager.removeUser();
-        return null;
-      }
-      throw error;
-    }
-  }
-
-  return {
-    async signin(returnTo: string): Promise<void> { await manager.signinRedirect({ state: returnTo }); },
-    async settleCallback(): Promise<OidcUserLike | null> {
-      if (options.isSilentCallback?.()) {
-        await manager.signinSilentCallback();
-        return null;
-      }
-      const user = await manager.signinRedirectCallback();
-      identity(user);
-      return user;
-    },
-    currentUser,
-    async currentIdentity(): Promise<WebsiteIdentity | null> {
-      const user = await currentUser(true);
-      return user ? identity(user) : null;
-    },
-    async recoverAuthorizationHeader(): Promise<Record<string, string>> {
-      const user = await recoverUser();
-      return { Authorization: `Bearer ${user.access_token}` };
-    },
-    async logout(postLogoutRedirectUri: string): Promise<void> {
-      generation += 1;
-      recoveryInFlight = null;
-      const current = await manager.getUser();
-      manager.stopSilentRenew();
-      await manager.removeUser();
-      await manager.signoutRedirect({
-        post_logout_redirect_uri: postLogoutRedirectUri,
-        ...(current?.id_token ? { id_token_hint: current.id_token } : {}),
-      });
-    },
   };
+  return manager;
 }
 
 let singletonKey = "";
-let singleton: ReturnType<typeof createOidcRuntime> | null = null;
-
-export function websiteOidcRuntime(authority: string, origin: string) {
+let singleton: UserManager | null = null;
+export function websiteUserManager(authority: string, origin: string): UserManager {
   const key = `${authority.replace(/\/$/, "")}|${new URL(origin).origin}`;
   if (!singleton || singletonKey !== key) {
+    singleton?.stopSilentRenew();
     singletonKey = key;
-    singleton = createOidcRuntime(
-      new UserManager(websiteOidcSettings(authority, origin)) as unknown as OidcManagerPort,
-      { isSilentCallback: () => window.self !== window.top },
-    );
+    singleton = bindWebsiteUserManager(new UserManager(websiteOidcSettings(authority, origin)));
   }
   return singleton;
+}
+
+export async function currentWebsiteUser(manager: UserManager, allowRecovery: boolean): Promise<User | null> {
+  if (websiteLogoutFenced()) { await manager.removeUser(); return null; }
+  const stored = await manager.getUser();
+  if (websiteLogoutFenced()) { await manager.removeUser(); return null; }
+  if (active(stored)) return stored;
+  if (!allowRecovery) return null;
+  try {
+    return await manager.signinSilent();
+  } catch (error) {
+    if (interactionRequired(error) || (error as Error)?.message === "OIDC_LOGOUT_FENCE") {
+      await manager.removeUser();
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function currentWebsiteIdentity(authority: string, origin: string): Promise<WebsiteIdentity | null> {
+  const user = await currentWebsiteUser(websiteUserManager(authority, origin), true);
+  return user ? identity(user) : null;
+}
+
+export async function beginWebsiteLogin(authority: string, origin: string, returnTo: string): Promise<void> {
+  await websiteUserManager(authority, origin).signinRedirect({ state: returnTo });
+}
+
+export async function settleWebsiteManagerCallback(
+  manager: UserManager,
+  silent: boolean,
+): Promise<User | null> {
+  if (silent) {
+    await manager.signinSilentCallback();
+    return null;
+  }
+  const user = await manager.signinRedirectCallback();
+  identity(user);
+  clearWebsiteLogoutFence();
+  return user;
+}
+
+export function settleWebsiteCallback(authority: string, origin: string): Promise<User | null> {
+  return settleWebsiteManagerCallback(
+    websiteUserManager(authority, origin),
+    window.self !== window.top,
+  );
+}
+
+export async function recoverWebsiteAuthorizationHeader(
+  authority: string,
+  origin: string,
+): Promise<Record<string, string>> {
+  const user = await websiteUserManager(authority, origin).signinSilent();
+  if (!user) throw new Error("OIDC_SILENT_USER_MISSING");
+  return { Authorization: `Bearer ${user.access_token}` };
+}
+
+export async function logoutWebsiteManager(
+  manager: UserManager,
+  postLogoutRedirectUri: string,
+): Promise<void> {
+  establishWebsiteLogoutFence();
+  manager.stopSilentRenew();
+  const current = await manager.getUser();
+  await manager.removeUser();
+  await manager.signoutRedirect({
+    post_logout_redirect_uri: postLogoutRedirectUri,
+    ...(current?.id_token ? { id_token_hint: current.id_token } : {}),
+  });
+}
+
+export function logoutWebsite(authority: string, origin: string): Promise<void> {
+  const normalizedOrigin = new URL(origin).origin;
+  return logoutWebsiteManager(websiteUserManager(authority, normalizedOrigin), `${normalizedOrigin}/`);
 }
 
 export function safeWebsiteReturnTo(value: unknown, origin: string): string {
