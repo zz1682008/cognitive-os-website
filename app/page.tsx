@@ -2,6 +2,7 @@ import Image from "next/image";
 import { DecisionChainDemo } from "./components/decision-chain-demo";
 import { XelitiMotion } from "./components/xeliti-motion";
 import { XelitiPlatformStory } from "./components/xeliti-platform-story";
+import { AccountSession } from "./components/account-session";
 
 function Brand() {
   return (
@@ -27,6 +28,7 @@ function DownloadIcon() {
 }
 
 export default function Home() {
+  const accountCenterAuthority = process.env.PLATFORM_ACCOUNT_CENTER_ISSUER ?? "http://127.0.0.1:5200";
   return (
     <XelitiMotion>
       <a className="skip-link" href="#main">
@@ -58,6 +60,7 @@ export default function Home() {
           <a className="nav-action" href="#download">
             桌面版 <DownloadIcon />
           </a>
+          <AccountSession authority={accountCenterAuthority} />
 
           <details className="mobile-menu">
             <summary aria-label="打开导航">菜单</summary>
