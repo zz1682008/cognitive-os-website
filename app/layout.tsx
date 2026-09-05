@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const title = "XELITI｜让每个产品都拥有认知能力";
+const title = "XELITI Business｜让 AI 真正懂你的企业";
 const description =
-  "XELITI 是通用认知平台，通过共享 Agent Harness、Cognitive Kernel 与状态记忆能力，支持 Business、Personal 和未来产品持续理解并采取下一步行动。";
+  "让企业资料成为 AI 读得懂的知识，让财务、法务、智能客服与秘书台在同一套企业理解上协同。了解 XELITI Business 的产品设计与工作方式。";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
-const socialImage = siteUrl ? `${siteUrl}/og.png` : undefined;
+const socialImage = siteUrl ? `${siteUrl}/og-business-r5.webp` : undefined;
 
 export const metadata: Metadata = {
   title,
@@ -26,9 +26,9 @@ export const metadata: Metadata = {
       ? [
           {
             url: socialImage,
-            width: 1731,
-            height: 909,
-            alt: "XELITI 通用认知平台",
+            width: 1320,
+            height: 704,
+            alt: "XELITI Business，让 AI 真正懂你的企业：抽象神经信号视觉",
           },
         ]
       : undefined,

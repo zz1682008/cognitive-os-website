@@ -38,7 +38,7 @@ export function AccountSession({ authority }: { authority: string }) {
       type="button"
       disabled={pending}
       onClick={identity ? logout : login}
-      aria-label={identity ? "退出 XELITI 账号" : "登录 XELITI 账号"}
+      aria-label={pending ? "账号检查中" : identity ? "退出账号 — XELITI" : "登录账号 — XELITI"}
     >
       {pending ? "账号检查中" : identity ? "退出账号" : "登录账号"}
     </button>
