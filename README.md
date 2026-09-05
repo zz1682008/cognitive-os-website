@@ -14,21 +14,24 @@ XELITI 官网首页第八版，老板已确认设计定稿，按 V1.0 官网宣�
 
 - Node.js `>=22.13.0`
 
-## 本地预览
+## 静态构建与本地预览
+
+本候选只面向已确认的测试站点 `https://twww.linzhaozhao.com`。构建前必须显式提供三个公开输入；缺失、无效或其他目标会报错，不回退到生产或 localhost。复用已安装依赖；首次安装使用 `npm ci`，不升级依赖。发布构建前先通过既有 Root S3 gate，命令与交付步骤见 [静态部署说明](docs/static-deployment.md)。
 
 ```bash
-npm install
+export NEXT_PUBLIC_SITE_URL=https://twww.linzhaozhao.com
+export PLATFORM_ACCOUNT_CENTER_ISSUER=https://tqy.linzhaozhao.com
+export WEBSITE_CANONICAL_ORIGIN=https://twww.linzhaozhao.com
 npm run build
-npm run start -- --hostname 127.0.0.1 --port 3011
+# 仅供本机检查静态文件；上线使用 nginx。
+python3 -m http.server 3012 --bind 127.0.0.1 --directory dist/client
 ```
 
-本地验收使用生产预览，首页位于 `/`，Personal 静态页位于 `/personal/`。开发模式仍可使用 `npm run dev`；若当前机器的 Cloudflare `workerd` 无法启动，以上生产预览命令不依赖开发模式即可完成两条真实路径的检查。
+此简易本地文件服务可查看 `/`、`/personal/` 和 `/auth/callback.html`，不包含 nginx 的 extensionless callback / RSC 路由映射，不能代替部署配置或真实测试域名登录验收。本机来源也不会变成已注册的测试域名回调。开发模式可在相同公开输入下使用 `npm run dev`。
 
-正式部署时设置 `NEXT_PUBLIC_SITE_URL` 为网站完整来源地址，例如 `https://www.example.com`。只有设置正式地址后，页面才会输出 Open Graph 和 X 分享图的绝对 URL，避免在本地阶段写入虚假域名。
+Vinext 原生导出页面与 RSC；现有 Vite 构建通过 `emitFile` 复用 robots/sitemap 的 GET 响应，Personal 沿用 `public/personal/index.html`。只交付 `dist/client`，`dist/server` 是本机构建中间结果，不能上传或公开。nginx 路由见 [twww 配置](deploy/nginx-twww-static.conf)。无需官网常驻 Node/Worker，也不调用 Sites 发布。
 
-当官网位于反向代理之后并接入统一登录时，还必须设置
-`WEBSITE_CANONICAL_ORIGIN` 为浏览器使用的 HTTPS 来源地址。OIDC 回调、登出回跳和
-Secure Cookie 都以这个受控来源为准，不采信外部请求头拼接认证地址。
+页面和 RSC 固定使用上述站点与 issuer。`WEBSITE_CANONICAL_ORIGIN` 是构建一致性约束；现有浏览器 OIDC 仍通过 `window.location.origin` 生成 callback 和登出回跳，协议及存储逻辑不变。nginx 运行时设置环境变量不会改变构件，变更目标必须重新确认并构建。
 
 ## 项目结构
 
@@ -51,10 +54,13 @@ Secure Cookie 都以这个受控来源为准，不采信外部请求头拼接认
 ## 质量检查
 
 - `npm run lint`：静态代码检查
-- `npm run build`：完整生产构建
-- `npm test`：依次执行 9 项普通单元测试（4 项现有协议测试、5 项示例演算与 CSV 测试）、lint 和生产构建
+- `npm run build`：完整静态构建，使用上述公开输入
+- `npm test`：通过现有 Node test 入口运行协议、示例演算与静态配置/资产生成测试，再执行 lint 和静态构建
+- `npx tsc --noEmit`、`git diff --check`：类型及补丁检查
 - 浏览器：电脑／手机／窄屏、亮色／深色、减少动态效果、无脚本后备、指针形变与页面级暂停、所有章节无需点击、导航与图片加载
 
 旧版首页组件与 `scripts/verify-xeliti-brand.mjs` 保留为历史来源；后者约束旧版固定文案，不作为本次新设计的验收入口，不新增逐任务验证工具。
+
+本候选完成构建适配不代表已合并、独立复核或上线。桌面/手机布局、滚动和指针动画、工作台播放/暂停/重播、导航、账号跳转由统筹对精确构件做浏览器 QA；已知手机 LCP 边界保留，本次不做性能或设计改动。
 
 隔离工作树与分支：`codex/website-v1-redesign-20260905`。老板确认 R8 后进入 Git 封板，线上部署另行核验并记录，不能由 Git 标签推断已上线。本轮客服过程设计与自查见 [第八版记录](docs/website-service-r8.md)；[第七版自然语言办公](docs/website-natural-work-r7.md)、[第五版](docs/website-signal-r5.md)、[第四版](docs/website-ai-narrative-r4.md)、[第三版](docs/website-result-motion-r3.md) 与 [更早记录](docs/website-v1-redesign.md) 保留历史。财务与法务各有两轮预设对话，发送按钮只重放本轮示例；客服把理解与核对过程嵌入 AI 对话，取消独立的中间文件区，支持自动播放及重播。它是高层产品处理示意，不是模型内部思维实录或实际接入能力验证。报表下载文件含示例标识，与页面算例一致，不是正式企业报表。
