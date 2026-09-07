@@ -1,14 +1,16 @@
 # XELITI 官网
 
-XELITI 官网首页第八版，老板已确认设计定稿，按 V1.0 官网宣传版封板。沿用灰白、深色文字与橙色品牌语言，先整体介绍「让 AI 真正懂你的企业」，再展示自然语言办公的过程和结果。设计封板不代表后台 V1.0 能力交付或网站已上线；Git 版本及发布边界见 [R8 封板记录](docs/website-v1-r8-seal.md)。
+XELITI 官网第九版（2026-09-07 改版）。沿用灰白、深色文字与橙色品牌语言，主线只讲三件事：企业大脑、推演、智能客服，第一期主打的财务与法务各占一屏。每一屏用会动的界面演示说话，文字只留一句标题。设计稿见 `doc/design/website-redesign-2026-09-07/`（在 Root 仓库）；官网表达不代表相关后台能力已交付。
 
-展示顺序：产品介绍、抽象神经信号与下载入口 → 目标推演、财务/法务风险及对应方案 → 企业文件夹 → 财务对话录入凭证，再对话生成两张报表 → 法务对话审阅合同，再拟定草案 → 从模板匹配升级为 AI 对话内部的诉求理解、公司资料核对、业务安排，回复仅作收尾 → 秘书工作台冲突提醒 → 点阵企业大脑、翻动资料和各工作结果的整体协同 → 大幅品牌收尾。推演为首个具体产品工作台；官网产品设计不代表相关后台能力已交付，不改变正式版本进度。
+首页顺序：首屏点阵拼出 XELITI（鼠标推开、点按炸开）→ 企业大脑（公司的资料、账、制度、目标从核里长出来）+ 秘书台窗口 → 推演（未来的风险与别人的经验提前搬到眼前）→ 财务（发票吸进对话框，凭证与报表长出来）→ 法务（一道光扫过合同，风险条款原地泛红并附建议）→ 智能客服（升级前后两部手机）→ 品牌收尾。
 
-保留 B 端左导航、中间工作区、右上下文结构，使用硬编码示例数据演示结果变化。所有场景平铺，不用点选；电脑端进入视野后分别播放知识流动、结果落位、条款标记、理解后回应、风险上报，可暂停、重播，不固定或缩放整页。手机端、减少动态效果和无 JavaScript 模式直接呈现完整结果。真人感头像明确为虚构 AI 形象，无真实企业数据或模型调用。
+产品菜单只有三项：XELITI Business（企业端）、智能客服、XELITI Personal（个人端）。
 
-首屏「下载桌面版」打开原生版本选择框，复用现有 `desktopReleaseConfig`。当前 macOS、Windows URL 均为空，明确告知未配置并禁用下载；接到正式链接后才会出现真实下载地址。
+底部与二级页由 `app/lib/site-content.ts` 单一数据源驱动，共 15 个页面：帮助中心、使用文档、接入文档、更新日志、服务状态、关于、新闻、加入我们、联系我们、申请试用、桌面版下载、安全与数据边界、隐私政策、服务条款、Cookie 说明。这份数据将来由管理端维护，改一处全站生效；当前是默认稿，试用报价、详细地址、备案号处标注「待填」。
 
-仅修改公开展示；保留现有统一账号入口与 OIDC 协议，不新增认证、支付、后台能力或桌面安装包。个人产品入口保持原样。
+所有演示使用硬编码示例数据，无真实企业数据或模型调用。演示进入视野各自播放一次，可点击重播；`prefers-reduced-motion` 下直接呈现完整结果。
+
+仅修改公开展示；保留现有统一账号入口与 OIDC 协议，不新增认证、支付、后台能力或桌面安装包。个人产品入口 `/personal/` 保持原样。
 
 ## 环境要求
 
@@ -35,18 +37,19 @@ Vinext 原生导出页面与 RSC；现有 Vite 构建通过 `emitFile` 复用 ro
 
 ## 项目结构
 
-- `app/page.tsx`：官网内容与语义结构
-- `app/components/xeliti-product-stories.tsx`：目标、财务、法务、客服、秘书台和协同图的示例展示
-- `app/lib/website-demo.mjs`：同一组示例数据、借贷及报表演算和本地示例 CSV，供页面和普通单元测试使用；不接企业账务系统
-- `app/components/xeliti-mobile-menu.tsx`：手机导航与键盘关闭
-- `app/components/xeliti-motion.tsx`：GSAP 动画与完整清理边界
-- `app/components/xeliti-neural-visual.tsx`：响应指针的原生信号波、抽象点阵脑和资料汇入流场；无脚本 SVG 后备
+- `app/page.tsx`：首页内容与语义结构
+- `app/[slug]/page.tsx`：由 `site-content.ts` 渲染的 15 个二级页
+- `app/lib/site-content.ts`：底部导航、二级页正文、联系方式与备案信息的单一数据源（管理端维护面）
+- `app/components/site-header.tsx` / `site-footer.tsx`：全站头尾
+- `app/components/hero-dots.tsx`：首屏点阵 XELITI，指针推开与爆炸冲击波
+- `app/components/enterprise-brain.tsx`：企业大脑的核与往外生长的资料流
+- `app/components/foresight.tsx`：推演路径与提前冒出的风险节点
+- `app/components/finance-scene.tsx` / `legal-scene.tsx` / `service-scene.tsx` / `secretary-window.tsx`：四段界面演示
+- `app/components/motion.tsx`：滚动进场、演示播放与重播的公共边界
 - `app/components/platform-download.tsx`：复用现有版本配置的桌面下载入口
 - `app/globals.css`：视觉系统与响应式布局
 - `app/layout.tsx`：中文页面元数据与字体设置
 - `public/favicon.svg`：站点图标
-- `public/xeliti-folder-v1.webp`：沿用的企业文件夹设计图，另有手机尺寸版本
-- `public/xeliti-service-person-r3.webp`：虚构 AI 服务助手形象，另有手机尺寸版本
 - `public/og-business-r5.webp`：当前抽象信号首页实际渲染的分享图
 - 历史脑图、概念图和旧分享图保留，不再用于当前首页
 - `.openai/hosting.json`：保留 Sites 托管配置；当前没有数据库或存储绑定
@@ -55,7 +58,7 @@ Vinext 原生导出页面与 RSC；现有 Vite 构建通过 `emitFile` 复用 ro
 
 - `npm run lint`：静态代码检查
 - `npm run build`：完整静态构建，使用上述公开输入
-- `npm test`：通过现有 Node test 入口运行协议、示例演算与静态配置/资产生成测试，再执行 lint 和静态构建
+- `npm test`：通过现有 Node test 入口运行协议、站点内容与静态配置/资产生成测试，再执行 lint 和静态构建
 - `npx tsc --noEmit`、`git diff --check`：类型及补丁检查
 - 浏览器：电脑／手机／窄屏、亮色／深色、减少动态效果、无脚本后备、指针形变与页面级暂停、所有章节无需点击、导航与图片加载
 

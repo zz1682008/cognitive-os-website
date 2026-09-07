@@ -34,13 +34,13 @@ export function AccountSession({ authority }: { authority: string }) {
 
   return (
     <button
-      className="nav-action"
+      className="btn btn-line"
       type="button"
       disabled={pending}
       onClick={identity ? logout : login}
       aria-label={pending ? "账号检查中" : identity ? "退出账号 — XELITI" : "登录账号 — XELITI"}
     >
-      {pending ? "账号检查中" : identity ? "退出账号" : "登录账号"}
+      {pending ? "账号检查中" : identity ? "退出账号" : "登录"}
     </button>
   );
 }

@@ -1,3 +1,5 @@
+import { pageSlugs } from "../lib/site-content.ts";
+
 function escapeXml(value: string) {
   return value
     .replaceAll("&", "&amp;")
@@ -9,12 +11,11 @@ function escapeXml(value: string) {
 
 export function GET(request: Request) {
   const origin = new URL(request.url).origin;
+  const paths = ["/", "/personal/", ...pageSlugs.map(slug => `/${slug}`)];
   const body = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    "  <url>",
-    `    <loc>${escapeXml(origin)}/</loc>`,
-    "  </url>",
+    ...paths.flatMap(path => ["  <url>", `    <loc>${escapeXml(origin + path)}</loc>`, "  </url>"]),
     "</urlset>",
     "",
   ].join("\n");
