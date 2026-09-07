@@ -1,7 +1,6 @@
-import Link from "next/link";
-
 import { EnterpriseBrain } from "./components/enterprise-brain";
 import { FinanceScene } from "./components/finance-scene";
+import { BlockHead, FinaleActions, HeroCopy } from "./components/home-copy";
 import { Foresight } from "./components/foresight";
 import { HeroDots } from "./components/hero-dots";
 import { LegalScene } from "./components/legal-scene";
@@ -24,17 +23,7 @@ export default function Home() {
         <section className="hero" id="top">
           <HeroDots />
           <div className="shell">
-            <div className="hero-copy">
-              <p className="eyebrow" data-rv>XELITI BUSINESS</p>
-              <h1 data-rv>让 AI，<br />真正懂你的企业。</h1>
-              <p className="sub" data-rv>
-                合同、账、制度、目标，全装在一个脑子里。所以风险它先看见，决定它先替你推一遍，客户的问题它替你答。
-              </p>
-              <div className="hero-act" data-rv>
-                <Link className="btn btn-dark btn-lg" href="/trial">申请试用</Link>
-                <a className="btn btn-line btn-lg" href="#brain">它怎么做到的 ↓</a>
-              </div>
-            </div>
+            <HeroCopy />
           </div>
           <div className="scroll-hint" aria-hidden="true"><span>SCROLL</span><i /></div>
         </section>
@@ -42,15 +31,9 @@ export default function Home() {
         {/* 1 · 企业大脑 */}
         <section className="sec sec-soft" id="brain">
           <div className="shell">
-            <div className="head">
-              <p className="eyebrow" data-rv>为什么它给的是你公司的答案</p>
-              <h2 data-rv>它把你公司的所有事，<br />装进企业大脑。</h2>
-            </div>
+            <BlockHead block="brain" />
             <EnterpriseBrain />
-            <div className="head" id="secretary" style={{ margin: "64px auto 40px" }}>
-              <p className="eyebrow" data-rv>秘书台</p>
-              <h2 data-rv>你不用天天盯，<br />事情自己找上来。</h2>
-            </div>
+            <BlockHead block="secretary" id="secretary" style={{ margin: "64px auto 40px" }} />
             <SecretaryWindow />
           </div>
         </section>
@@ -58,10 +41,7 @@ export default function Home() {
         {/* 2 · 推演 */}
         <section className="sec" id="reason">
           <div className="shell">
-            <div className="head">
-              <p className="eyebrow" data-rv>推演</p>
-              <h2 data-rv>把未来的风险、别人的经验，<br />提前搬到你眼前。</h2>
-            </div>
+            <BlockHead block="reason" />
             <Foresight />
           </div>
         </section>
@@ -69,10 +49,7 @@ export default function Home() {
         {/* 3 · 财务 */}
         <section className="sec sec-soft" id="finance">
           <div className="shell">
-            <div className="head">
-              <p className="eyebrow" data-rv>财务</p>
-              <h2 data-rv>发票丢进去，<br />剩下的它做。</h2>
-            </div>
+            <BlockHead block="finance" />
             <FinanceScene />
           </div>
         </section>
@@ -80,10 +57,7 @@ export default function Home() {
         {/* 4 · 法务 */}
         <section className="sec" id="legal">
           <div className="shell">
-            <div className="head">
-              <p className="eyebrow" data-rv>法务</p>
-              <h2 data-rv>合同丢进去，<br />坑自己亮。</h2>
-            </div>
+            <BlockHead block="legal" />
             <LegalScene />
           </div>
         </section>
@@ -91,10 +65,7 @@ export default function Home() {
         {/* 5 · 智能客服 */}
         <section className="sec sec-soft" id="service">
           <div className="shell">
-            <div className="head">
-              <p className="eyebrow" data-rv>智能客服</p>
-              <h2 data-rv>同一个问题，<br />客服升级前后。</h2>
-            </div>
+            <BlockHead block="service" />
             <ServiceScene />
           </div>
         </section>
@@ -102,10 +73,7 @@ export default function Home() {
         {/* 品牌收尾 */}
         <section className="finale" id="finale" data-rv>
           <div className="shell">
-            <div className="top" data-rv>
-              <Link className="btn btn-dark btn-lg" href="/trial">申请试用</Link>
-              <Link className="btn btn-line btn-lg" href="/download">下载桌面版</Link>
-            </div>
+            <FinaleActions />
             <div className="monument" role="img" aria-label="XELITI">
               <svg viewBox="0 0 44 44" aria-hidden="true">
                 <path d="M5 30.5C9 30.5 10.5 12.5 16 12.5S19.5 31.5 24.5 31.5 28 12.5 33 12.5s5.5 14.5 6 18" />

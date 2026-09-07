@@ -22,12 +22,16 @@ export default defineConfig(() => {
     }
   }
 
+  // 官网文案的运行时来源：同源相对路径，由 nginx 反代到管理端的公开只读接口。
+  // 取不到就用构建时打进去的默认稿，所以这里不需要额外的环境变量。
+  const runtimeConfig = { NEXT_PUBLIC_SITE_CONTENT_URL: "/api/site-content" };
+
   return {
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,
     // Pin page/RSC config to the validated inputs at compile time as well.
-    define: Object.fromEntries(Object.entries(publicConfig).map(([key, value]) =>
+    define: Object.fromEntries(Object.entries({ ...publicConfig, ...runtimeConfig }).map(([key, value]) =>
       [`process.env.${key}`, JSON.stringify(value)])),
     // nginx serves only Vinext's exported dist/client files.
     plugins: [

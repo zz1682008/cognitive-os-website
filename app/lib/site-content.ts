@@ -24,21 +24,98 @@ export type SitePage = {
 
 export type FooterColumn = { title: string; links: { text: string; href: string }[] };
 
-export const brand = {
+export type Brand = { name: string; slogan: string; icp: string; police: string; copyright: string };
+
+export type Contact = { email: string; sales: string; support: string; wechat: string; address: string };
+
+/** 首页一屏的标题按行编辑，渲染时逐行断开。 */
+export type HomeBlock = { id: string; eyebrow: string; title: string[] };
+
+export type HomeCopy = {
+  hero: { eyebrow: string; title: string[]; sub: string; primary: string; secondary: string };
+  blocks: HomeBlock[];
+  finale: { primary: string; secondary: string };
+};
+
+export type NavCopy = {
+  productsLabel: string;
+  products: { href: string; title: string; note: string }[];
+  links: { href: string; text: string }[];
+  download: string;
+  trial: string;
+};
+
+/** 二级页底部那块「先从一个目标开始」的招呼。 */
+export type CtaCopy = { title: string; note: string; button: string };
+
+export type SiteContent = {
+  brand: Brand;
+  contact: Contact;
+  nav: NavCopy;
+  home: HomeCopy;
+  cta: CtaCopy;
+  footerColumns: FooterColumn[];
+  pages: Record<string, SitePage>;
+};
+
+export const brand: Brand = {
   name: "XELITI",
   slogan: "让 AI 真正懂你的企业。",
   icp: "京 ICP 备 XXXXXXXX 号",
   police: "京公网安备 XXXXXXXXXXXXX 号",
   copyright: "© 2026 XELITI",
-} as const;
+};
 
-export const contact = {
+export const contact: Contact = {
   email: "hello@xeliti.com",
   sales: "sales@xeliti.com",
   support: "support@xeliti.com",
   wechat: "XELITI 官方公众号",
   address: "北京市",
-} as const;
+};
+
+export const nav: NavCopy = {
+  productsLabel: "产品",
+  products: [
+    { href: "#brain", title: "XELITI Business", note: "企业端 · 工作台与秘书台" },
+    { href: "#service", title: "智能客服", note: "对外出口 · 懂你公司的客服" },
+    { href: "/personal/", title: "XELITI Personal", note: "个人端 · 面向个人的重要选择" },
+  ],
+  links: [
+    { href: "#brain", text: "企业大脑" },
+    { href: "#reason", text: "推演" },
+    { href: "#finance", text: "财务" },
+    { href: "#legal", text: "法务" },
+    { href: "/help", text: "帮助" },
+  ],
+  download: "下载桌面版",
+  trial: "申请试用",
+};
+
+export const home: HomeCopy = {
+  hero: {
+    eyebrow: "XELITI BUSINESS",
+    title: ["让 AI，", "真正懂你的企业。"],
+    sub: "合同、账、制度、目标，全装在一个脑子里。所以风险它先看见，决定它先替你推一遍，客户的问题它替你答。",
+    primary: "申请试用",
+    secondary: "它怎么做到的 ↓",
+  },
+  blocks: [
+    { id: "brain", eyebrow: "为什么它给的是你公司的答案", title: ["它把你公司的所有事，", "装进企业大脑。"] },
+    { id: "secretary", eyebrow: "秘书台", title: ["你不用天天盯，", "事情自己找上来。"] },
+    { id: "reason", eyebrow: "推演", title: ["把未来的风险、别人的经验，", "提前搬到你眼前。"] },
+    { id: "finance", eyebrow: "财务", title: ["发票丢进去，", "剩下的它做。"] },
+    { id: "legal", eyebrow: "法务", title: ["合同丢进去，", "坑自己亮。"] },
+    { id: "service", eyebrow: "智能客服", title: ["同一个问题，", "客服升级前后。"] },
+  ],
+  finale: { primary: "申请试用", secondary: "下载桌面版" },
+};
+
+export const cta: CtaCopy = {
+  title: "先从一个目标开始。",
+  note: "30 天试用，不限功能。",
+  button: "申请试用",
+};
 
 export const footerColumns: FooterColumn[] = [
   {
@@ -525,3 +602,9 @@ Authorization: Bearer <token>
 };
 
 export const pageSlugs = Object.keys(pages);
+
+/**
+ * 全站文案的出厂默认稿。管理端保存后由运行时覆盖，取不到时就用这一份，
+ * 所以官网永远能完整渲染，不依赖管理端在不在。
+ */
+export const defaultSiteContent: SiteContent = { brand, contact, nav, home, cta, footerColumns, pages };

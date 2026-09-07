@@ -1,14 +1,17 @@
+"use client";
+
 import Link from "next/link";
 
-import { brand, contact, footerColumns } from "../lib/site-content";
+import { useSiteContent } from "./site-content-provider";
 
 export function SiteFooter() {
+  const { brand, contact, footerColumns } = useSiteContent();
   return (
     <footer className="ftr">
       <div className="shell">
         <div className="ftr-cols">
           <div className="ftr-brand">
-            <Link className="bw" href="/" aria-label="XELITI 首页">
+            <Link className="bw" href="/" aria-label={`${brand.name} 首页`}>
               <svg viewBox="0 0 44 44" aria-hidden="true">
                 <path d="M5 30.5C9 30.5 10.5 12.5 16 12.5S19.5 31.5 24.5 31.5 28 12.5 33 12.5s5.5 14.5 6 18" />
                 <circle cx="5" cy="30.5" r="2.4" />

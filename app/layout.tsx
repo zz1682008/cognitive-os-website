@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { SiteContentProvider } from "./components/site-content-provider";
 import "./globals.css";
 
 const title = "XELITI Business｜让 AI 真正懂你的企业";
@@ -58,7 +59,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body>
+        <SiteContentProvider>{children}</SiteContentProvider>
+      </body>
     </html>
   );
 }
